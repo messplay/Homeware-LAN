@@ -53,12 +53,8 @@ class Data:
         else:
             print('DDBB up and running')
 
-        # Create the tasks
-        try:
-            print("test")
-            print(self.redis.get('tasks') )
-        except:
-            print("test except")
+        # Create the tasks key if needed
+        if not self.redis.get('tasks'):
             self.redis.set('tasks',"[]")
 
         self.userName = json.loads(self.redis.get('secure'))['user']
