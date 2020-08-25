@@ -10,10 +10,6 @@ function requestSettings(){
 
 function loadSettings(local_data){
   var token = JSON.parse(local_data);
-<<<<<<< HEAD
-=======
-  console.log(token)
->>>>>>> 8c5b5cc1aca3e5db3f5f7ccdb1b96498afe3a645
 
   document.getElementById('clientId').value = token['google']['client_id'];
   document.getElementById('clientSecret').value = token['google']['client_secret'];
@@ -28,6 +24,9 @@ function loadSettings(local_data){
   document.getElementById('ddnsEnabled').checked = token['ddns']['enabled'];
   document.getElementById('ddnsLastUpdate').innerHTML = '<b>Last update:</b> ' + token['ddns']['last'];
   document.getElementById('ddnsIP').innerHTML = '<b>IP:</b> ' + token['ddns']['ip'];
+
+  document.getElementById('mqttUser').value = token['mqtt']['user'];
+  document.getElementById('mqttPassword').value = token['mqtt']['password'];
 
   document.getElementById('apikey').value = token['apikey'];
 
@@ -47,13 +46,12 @@ function loadSettings(local_data){
 
 }
 
-<<<<<<< HEAD
 function requestStatus(){
   var http = new XMLHttpRequest();
   http.addEventListener("load", function(){
     loadStatus(http.responseText);
   });
-  http.open("GET", "/api/system/status");
+  http.open("GET", "/api/system/status/");
   http.setRequestHeader('authorization', 'baerer ' + getCookieValue('token'))
   http.send();
 }
@@ -73,6 +71,9 @@ function loadStatus(status){
   document.getElementById('mqttEnable').checked = status['mqtt']['enable'];
   document.getElementById('mqttBadge').innerHTML = status['mqtt']['status'];
   document.getElementById('mqttBadge').className = classes[status['mqtt']['status']];
+  document.getElementById('tasksEnable').checked = status['tasks']['enable'];
+  document.getElementById('tasksBadge').innerHTML = status['tasks']['status'];
+  document.getElementById('tasksBadge').className = classes[status['tasks']['status']];
   document.getElementById('redisEnable').checked = status['redis']['enable'];
   document.getElementById('redisBadge').innerHTML = status['redis']['status'];
   document.getElementById('redisBadge').className = classes[status['redis']['status']];
@@ -82,13 +83,15 @@ function loadStatus(status){
 }
 
 
-=======
->>>>>>> 8c5b5cc1aca3e5db3f5f7ccdb1b96498afe3a645
 saveGoogle.addEventListener('click', function() {
   save();
 });
 
 saveDDNS.addEventListener('click', function() {
+  save();
+});
+
+saveMQTT.addEventListener('click', function() {
   save();
 });
 
@@ -109,6 +112,9 @@ function save(){
     document.getElementById('ddnsStatusBadge').innerHTML = 'Waiting to request'
   else
     document.getElementById('ddnsStatusBadge').innerHTML = 'Disabled'
+  data['mqtt'] = {};
+  data['mqtt']['user'] = document.getElementById('mqttUser').value;
+  data['mqtt']['password'] = document.getElementById('mqttPassword').value;
 
   saveData('settings', data);
   //Update the text message
@@ -172,27 +178,30 @@ function updateMessageWithTime(){
   document.getElementById('textMessageAlertDDNS').innerHTML = 'Saved at ' + h + ":" + m + ":" + s;
 }
 
-// TODO
-// - Show events list
+
 //Load the events
-/*showEventsLog.addEventListener('click', function(){
-  database.ref('/events/read/').on('value', function(eventsSnapshot){
-    var events = eventsSnapshot.val();
-    var eventsKeys = Object.keys(events);
+showEventsLog.addEventListener('click', function(){
+  var http = new XMLHttpRequest();
+  http.addEventListener("load", function(){
+    events = JSON.parse(http.responseText);
     //Compose the HTML
     var html = '';
-    for(i = eventsKeys.length-1; i > eventsKeys.length-11; i--){
-      var uniqueEvent = events[eventsKeys[i]];
+    for(i = events.length-1; i > events.length-11; i--){
+      var uniqueEvent = events[i];
       date = new Date(uniqueEvent.timestamp);
       html += '<div class="card"> <div class="card-body">';
-      html += '<b>' + uniqueEvent.title + '</b> <br> ' + uniqueEvent.text + ' <br> <b>Timestamp</b>: ';
-      html += addZero(date.getDate()) + '/' + addZero(date.getMonth()) + '/' + date.getFullYear() + ' ' + addZero(date.getHours()) + ':' + addZero(date.getMinutes()) + ':' + addZero(date.getSeconds());
+      html += '<b>' + uniqueEvent.severity + '</b> <br> ' + uniqueEvent.message + ' <br> <b>Timestamp</b>: ';
+      html += uniqueEvent.time;
       html += '</div> </div>';
     }
 
     document.getElementById('eventsLogBox').innerHTML = html;
-  })
-})*/
+
+  });
+  http.open("GET", "/api/log/get");
+  http.setRequestHeader('authorization', 'baerer ' + getCookieValue('token'))
+  http.send();
+})
 
 function buckup(){
   window.location = "/files/buckup/homeware/" + getCookieValue('token')
@@ -266,7 +275,11 @@ function downloadAndUpgrade(){
     upgradeStep = 2;
   } else if (upgradeStep == 2){
     document.getElementById('upgradeModalTitle').innerHTML = "Wait";
-    document.getElementById('upgradeModalParagraphContainer').innerHTML = "The system will be down some time. The page will be reloaded automatically into home page when the system will be ready.";
+    document.getElementById('upgradeModalParagraphContainer').innerHTML = "The system will be down some time. The page will be reloaded automatically into home page when the system will be ready.<div class=\"d-flex justify-content-center\">\
+                                                                            <div class=\"spinner-border\" role=\"status\">\
+                                                                              <span class=\"sr-only\">Loading...</span>\
+                                                                            </div>\
+                                                                          </div>";
     var http = new XMLHttpRequest();
     http.addEventListener("load", function(){
       code = JSON.parse(http.responseText)['code']
