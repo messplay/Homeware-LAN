@@ -32,6 +32,7 @@ class Data:
                     self.redis.set('devices',json.dumps(data['devices']))
                     self.redis.set('status',json.dumps(data['status']))
                     self.redis.set('rules',json.dumps(data['rules']))
+                    self.redis.set('tasks',json.dumps(data['tasks']))
                 with open(self.secureFile, 'r') as f:
                     data = json.load(f)
                     self.redis.set('secure',json.dumps(data))
@@ -44,6 +45,7 @@ class Data:
                     self.redis.set('devices',json.dumps(data['devices']))
                     self.redis.set('status',json.dumps(data['status']))
                     self.redis.set('rules',json.dumps(data['rules']))
+                    self.redis.set('tasks',json.dumps(data['tasks']))
                 with open(self.secureFile, 'r') as f:
                     data = json.load(f)
                     self.redis.set('secure',json.dumps(data))
