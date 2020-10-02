@@ -43,6 +43,7 @@ var deviceCoolName = {
   "action.devices.types.RADIATOR": 'Radiator',
   "action.devices.types.REFRIGERATOR": 'Refrigerator',
   "action.devices.types.SECURITYSYSTEM": 'Security system',
+  "action.devices.types.SENSOR": 'Sensor',
   "action.devices.types.SHOWER": 'Shower',
   "action.devices.types.SOUSVIDE": 'Sous vide',
   "action.devices.types.SHUTTER": 'Shutter',
